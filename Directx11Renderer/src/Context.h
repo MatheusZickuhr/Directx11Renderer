@@ -1,8 +1,11 @@
 #pragma once
 
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
+#define UNICODE
 #include <windows.h>
+
 #include <d3d11_1.h>
-#include <d3dcompiler.h>
 
 class Context {
 

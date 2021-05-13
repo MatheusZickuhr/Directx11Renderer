@@ -1,6 +1,6 @@
 #include "VertexBuffer.h"
 #include <assert.h>
-VertexBuffer::VertexBuffer(float data[], UINT dataSize, UINT stride) {
+VertexBuffer::VertexBuffer(void* data, UINT dataSize, UINT stride) {
 
 	this->stride = stride;
 

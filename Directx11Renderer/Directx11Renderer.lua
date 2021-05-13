@@ -14,7 +14,7 @@ project "Directx11Renderer"
     
     files { "src/**.cpp", "src/**.h" }
 
-    links { "GLFW" }
+    links { "GLFW", "d3dcompiler", "D3D11", "dxgi" }
 
     filter "system:linux"
 		links { "dl", "pthread" }

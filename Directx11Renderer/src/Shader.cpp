@@ -82,3 +82,47 @@ void Shader::addInputLayout(D3D11_INPUT_ELEMENT_DESC inputElementDesc[], UINT nu
 	assert(SUCCEEDED(hResult));
 	this->shaderByteCode->Release();
 }
+
+void Shader::addInputLayout(std::vector<InputElement> inputElements) {
+	const UINT numberOfElements = inputElements.size();
+	D3D11_INPUT_ELEMENT_DESC* inputElementDesc = new D3D11_INPUT_ELEMENT_DESC[numberOfElements];
+	D3D11_INPUT_ELEMENT_DESC* inputElementDescBegin = inputElementDesc;
+
+	for (auto& inputElement : inputElements) {
+		inputElementDesc->SemanticName = inputElement.name.c_str();
+		inputElementDesc->SemanticIndex = 0;
+		inputElementDesc->InputSlot = 0;
+		inputElementDesc->AlignedByteOffset = inputElement.offset;
+		inputElementDesc->InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+		inputElementDesc->InstanceDataStepRate = 0;
+
+		switch (inputElement.inputElementType) {
+		case InputElementType::Float: 
+			inputElementDesc->Format = DXGI_FORMAT_R32_FLOAT;
+			break;
+		case InputElementType::Vec2: 
+			inputElementDesc->Format = DXGI_FORMAT_R32G32_FLOAT;
+			break;
+		case InputElementType::Vec3:
+			inputElementDesc->Format = DXGI_FORMAT_R32G32B32_FLOAT;
+			break;
+		case InputElementType::Vec4:
+			inputElementDesc->Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+
+		inputElementDesc++;
+	}
+
+	HRESULT hResult = Directx11::getInstance().getDevice()->CreateInputLayout(
+		inputElementDescBegin,
+		numberOfElements,
+		this->shaderByteCode->GetBufferPointer(),
+		this->shaderByteCode->GetBufferSize(),
+		&this->inputLayout);
+
+	delete[] inputElementDescBegin;
+}

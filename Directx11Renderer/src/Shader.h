@@ -1,12 +1,19 @@
 #pragma once
 
 #include <string>
-#include <d3d11_1.h>
-#include <d3dcompiler.h>
+#include <vector>
 
 #include "Directx11.h"
 
 enum class ShaderType { Vertex, Fragment };
+
+enum class InputElementType { Float, Vec2, Vec3, Vec4 };
+
+struct InputElement {
+	InputElementType inputElementType;
+	std::string name;
+	UINT offset;
+};
 
 class Shader {
 
@@ -16,6 +23,8 @@ public:
 	void bind();
 
 	void addInputLayout(D3D11_INPUT_ELEMENT_DESC inputElementDesc[], UINT numberOfelements);
+
+	void addInputLayout(std::vector<InputElement> inputElements);
 
 private:
 

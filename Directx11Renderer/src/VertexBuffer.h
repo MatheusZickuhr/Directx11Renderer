@@ -1,14 +1,12 @@
 #pragma once
 
-#include <d3d11_1.h>
-#include <d3dcompiler.h>
 #include "Directx11.h"
 
 class VertexBuffer {
 
 public:
 
-	VertexBuffer(float data[], UINT dataSize, UINT stride);
+	VertexBuffer(void* data, UINT dataSize, UINT stride);
 
 	void bind();
 
