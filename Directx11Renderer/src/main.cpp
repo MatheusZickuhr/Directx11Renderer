@@ -9,76 +9,110 @@
 #include "VertexBuffer.h"
 #include <vector>
 
+#include "Input.h"
+#include "Camera.h"
+#include "CameraController.h"
+#include "ConstantBuffer.h"
+
+#include <glm/glm.hpp>
+
+#include <assert.h>
+
+
+
 
 int main() {
-   
-    const int width = 800, height = 600;
 
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+	Camera camera{ {0.0f, 0.0f, 6.0f} };
 
-    auto window = glfwCreateWindow(width, height, "Directx11Renderer", nullptr, nullptr);
+	CameraController cameraControler{ camera };
 
-    if (!window) {
-        std::cout << "Failed to create window" << std::endl;
-        return -1;
-    }
+	const int width = 800, height = 600;
 
-    auto hMainWnd = glfwGetWin32Window(window);
+	glfwInit();
+	glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 
-    Directx11::getInstance().initialize(hMainWnd);
+	auto window = glfwCreateWindow(width, height, "Directx11Renderer", nullptr, nullptr);
 
-    struct Vertex {
-        float position[2];
-        float color[4];
-    };
+	if (!window) {
+		std::cout << "Failed to create window" << std::endl;
+		return -1;
+	}
 
-    // Create Vertex Shader
-    
-    Shader vertexShader{ ShaderType::Vertex, L"shaders.hlsl" };
+	Input::init(window);
 
-    // Create Pixel Shader
-    Shader pixelShader{ ShaderType::Fragment, L"shaders.hlsl" };
+	auto hMainWnd = glfwGetWin32Window(window);
 
-    // Create Input Layout
-    vertexShader.addInputLayout({
-        {InputElementType::Vec2, "POS", offsetof(Vertex, position)},
-        {InputElementType::Vec4, "COL", offsetof(Vertex, color)}
-    });
+	Directx11::getInstance().initialize(hMainWnd);
 
-    // Create Vertex Buffer
-    Vertex vertexData[] = { // x, y, r, g, b, a
-        { {0.0f,  0.5f}, {0.f, 1.f, 0.f, 1.f} },
-        { {0.5f, -0.5f}, {1.f, 0.f, 0.f, 1.f} },
-        { {-0.5f, -0.5f}, {0.f, 0.f, 1.f, 1.f} }
-    };
-    VertexBuffer vertexBuffer { vertexData, sizeof(vertexData), sizeof(Vertex) };
+	struct VS_CONSTANT_BUFFER_DATA {
+		glm::mat4 cameraViewProjection;
+	};
 
-    Context* context = Directx11::getInstance().getContext();
+	VS_CONSTANT_BUFFER_DATA constbufferData{ camera.getViewProjectionMatrix(width, height) };
+	ConstantBuffer constBuffer { &constbufferData, sizeof(VS_CONSTANT_BUFFER_DATA) };
 
-    while (!glfwWindowShouldClose(window)) {
+	struct Vertex {
+		float position[2];
+		float color[4];
+	};
 
-        FLOAT backgroundColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-        context->clearRenderTargetView(backgroundColor);
+	// Create Vertex Shader
 
-        context->setViewPortToWindowDimensions();
+	Shader vertexShader{ ShaderType::Vertex, L"shaders.hlsl" };
 
-        context->setRenderTargetView();
+	// Create Pixel Shader
+	Shader pixelShader{ ShaderType::Fragment, L"shaders.hlsl" };
 
-        vertexShader.bind();
-        pixelShader.bind();
+	// Create Input Layout
+	vertexShader.addInputLayout({
+		{InputElementType::Vec2, "POS", offsetof(Vertex, position)},
+		{InputElementType::Vec4, "COL", offsetof(Vertex, color)}
+		});
 
-        vertexBuffer.bind();
+	// Create Vertex Buffer
+	Vertex vertexData[] = { // x, y, r, g, b, a
+		{ {0.0f,  0.5f}, {0.f, 1.f, 0.f, 1.f} },
+		{ {0.5f, -0.5f}, {1.f, 0.f, 0.f, 1.f} },
+		{ {-0.5f, -0.5f}, {0.f, 0.f, 1.f, 1.f} }
+	};
+	VertexBuffer vertexBuffer{ vertexData, sizeof(vertexData), sizeof(Vertex) };
 
-        context->draw(vertexBuffer.getNumVertices());
+	Context* context = Directx11::getInstance().getContext();
 
-        Directx11::getInstance().getSwapChain()->Present(0, 0);
+	float lastTime = 0.0f;
+	while (!glfwWindowShouldClose(window)) {
+		float currentTime = glfwGetTime();
+		float deltaTime = currentTime - lastTime;
+		lastTime = currentTime;
 
-        glfwPollEvents();
-    }
+		cameraControler.update(deltaTime);
 
-    glfwTerminate();
+		VS_CONSTANT_BUFFER_DATA newConstBufferData {camera.getViewProjectionMatrix(width, height )};
+		constBuffer.updateData(&newConstBufferData);
 
-    return 0;
+
+		FLOAT backgroundColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		context->clearRenderTargetView(backgroundColor);
+
+		context->setViewPortToWindowDimensions();
+
+		context->setRenderTargetView();
+
+		vertexShader.bind();
+		pixelShader.bind();
+
+		vertexBuffer.bind();
+
+		context->draw(vertexBuffer.getNumVertices());
+
+		Directx11::getInstance().getSwapChain()->Present(0, 0);
+
+		glfwPollEvents();
+	}
+
+	glfwTerminate();
+
+	return 0;
 }
 

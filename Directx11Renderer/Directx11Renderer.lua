@@ -10,11 +10,12 @@ project "Directx11Renderer"
 	
     includedirs { 
 		"%{wks.location}/Libraries/glfw/include/",
+		"%{wks.location}/Libraries/glm/"
 	}
     
     files { "src/**.cpp", "src/**.h" }
 
-    links { "GLFW", "d3dcompiler", "D3D11", "dxgi" }
+    links { "GLFW", "GLM", "d3dcompiler", "D3D11", "dxgi" }
 
     filter "system:linux"
 		links { "dl", "pthread" }

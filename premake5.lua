@@ -15,4 +15,5 @@ workspace "Directx11Renderer"
 
 
 include "Libraries/glfw.lua"
+include "Libraries/glm.lua"
 include "Directx11Renderer/Directx11Renderer.lua"
