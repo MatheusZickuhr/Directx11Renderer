@@ -8,7 +8,11 @@ public:
 
 	VertexBuffer(void* data, UINT dataSize, UINT stride);
 
+	VertexBuffer(UINT dataSize, UINT stride);
+
 	void bind();
+
+	void pushData(void* data, UINT dataSize);
 
 	UINT getNumVertices() { return this->numVerts; }
 
